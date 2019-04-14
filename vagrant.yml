@@ -1,0 +1,21 @@
+---
+- name: Set up vagrant
+  hosts: all
+  vars_files:
+    - vars/vaults.yml
+  vars:
+    mackerel_agent_apikey: "{{ mackerel_apikey }}"
+    mackerel_agent_roles:
+      - "Test:AmazonLinux2"
+    mackerel_use_plugins: yes
+    mackerel_check_plugins:
+      check_process:
+        command: "check-procs --file-pid=0"
+        action:
+          command: "echo \\\"Error on ${MACKEREL_TEST_ENV}. Tester=${MACKEREL_TEST_TESTER}\\\" >> /home/vagrant/mackerel.log"
+          env:
+            MACKEREL_TEST_ENV: vagrant_amazon_linux_2
+            MACKEREL_TEST_TESTER: kuchitama
+  roles:
+    - { role: ansible-mackerel-agent, become: yes }
+
