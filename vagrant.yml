@@ -7,8 +7,14 @@
     mackerel_agent_apikey: "{{ mackerel_apikey }}"
     mackerel_agent_roles:
       - "Test:AmazonLinux2"
+    mackerel_install_mkr: yes
     mackerel_use_plugins: yes
     mackerel_check_plugins:
+      check_cron: "/usr/bin/check-procs -p crond"
+      check_ntp:
+        command: "/usr/bin/check-procs -p ntpd"
+        action:
+          command: "echo 'ntpd is not running.' >> /home/vagrant/mackerel.log"
       check_process:
         command: "check-procs --file-pid=0"
         action:
@@ -16,6 +22,12 @@
           env:
             MACKEREL_TEST_ENV: vagrant_amazon_linux_2
             MACKEREL_TEST_TESTER: kuchitama
+  tasks:
+    - name: install packages
+      yum: name={{ item }} state=latest update_cache=yes
+      with_items:
+        - jq
+      become: yes
   roles:
     - { role: ansible-mackerel-agent, become: yes }
 
